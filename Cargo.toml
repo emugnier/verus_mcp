@@ -1,0 +1,21 @@
+[package]
+name = "verus_mcp"
+version = "0.1.0"
+edition = "2021"
+description = "Model Context Protocol server for Verus verification"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+
+[dependencies]
+rmcp = { version = "0.1", features = ["server", "macros", "transport-io"] }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+log = "0.4"
+env_logger = "0.10"
+clap = { version = "4.0", features = ["derive"] }
+schemars = { version = "0.8", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3.0"
