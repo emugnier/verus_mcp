@@ -1,0 +1,54 @@
+[package]
+name = "iban_validate"
+# Note: When updating, also update in lib.rs and README.md
+version = "5.0.1"
+authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
+description = "A small crate to verify IBAN account numbers."
+repository = "https://github.com/ThomasdenH/iban_check"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["iban", "iban-validator"]
+categories = ["parsing"]
+edition = "2021"
+include = ["src/**/*", "README.md"]
+
+[dependencies]
+vstd = "=0.0.0-2026-01-04-0057"
+
+[package.metadata.verus]
+verify = true
+
+[badges]
+maintenance = { status = "passively-maintained" }
+
+[lib]
+name = "iban"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+# Enables all features when building documentation
+[package.metadata.docs.rs]
+features = ["serde"]
+
+[dependencies.serde]
+version = "1"
+optional = true
+default-features = false
+features = ["derive"]
+
+[dependencies.arrayvec]
+version = "0.7"
+default-features = false
+
+[dev-dependencies]
+proptest = "1"
+static_assertions = "1"
+serde_test = "1"
+criterion = "0.3"
+
+[[bench]]
+name = "iban_benchmark"
+path = "benches/iban_benchmark.rs"
+harness = false
