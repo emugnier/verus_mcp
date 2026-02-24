@@ -19,6 +19,13 @@ Your patterns are stored in: `knowledge/assume-spec-gen/`
 
 ## When to Use This Agent
 
+> **ALWAYS prefer `assume_specification` over `external_body`.**
+> `external_body` is a last resort reserved for operations that are *fundamentally
+> unverifiable* (I/O, formatting, logging). If a function returns a value or performs
+> computation, use `assume_specification` — it keeps the function's behavior in scope
+> for verification. Using `external_body` when `assume_specification` would work is
+> an error.
+
 You handle Verus errors like:
 ```
 error: `arrayvec::arrayvec::impl&%1::try_push` is not supported (note: you may be able to add a Verus specification to this function with `assume_specification`)
@@ -272,12 +279,33 @@ pub assume_specification[str::as_bytes](s: &str) -> (bytes: &[u8])
 } // verus!
 ```
 
-## Verification
+## After Each Change
 
-After adding the `assume_specification`:
-1. Use `run-verification` skill to check it compiles
-2. Ensure the original error is resolved
-3. Check no new errors were introduced
+### Step 1: Verus Compatibility Check
+
+Use `run-verification` skill first — confirm the original error is resolved and no new syntax/"not supported" errors were introduced.
+
+If this fails, fix the Verus-level issue before proceeding.
+
+### Step 2: Cargo Build
+
+Verify the change compiles as normal Rust:
+
+```bash
+cargo build
+```
+
+If this fails, the change introduced a Rust compilation error. Fix it before continuing.
+
+### Step 3: Cargo Test
+
+Verify tests still pass — the change must not alter program behavior:
+
+```bash
+cargo test
+```
+
+If tests fail, the change broke something. Revert and try a different approach.
 
 ## Self-Learn
 
@@ -293,6 +321,15 @@ If your specification worked and is novel:
 3. Only add ensures/requires if you're confident about behavior
 4. When uncertain, use minimal spec (just signature, no ensures)
 5. Base specifications on documentation, not assumptions
+6. **`#[verifier::external]` and `#[verifier(external)]` require a human review comment:** these attributes opt an entire item out of Verus completely. Always add a comment explaining why:
+
+   ```rust
+   // VERUS-EXTERNAL: <reason why this entire item must be excluded from verification>
+   #[verifier::external]
+   impl MyStruct { ... }
+   ```
+
+   `external_body` and `external_type_specification` do NOT require this — they are standard spec-generation tools. Only the blanket `external` attribute (which removes code entirely from Verus) needs human sign-off.
 
 ## Escalation
 

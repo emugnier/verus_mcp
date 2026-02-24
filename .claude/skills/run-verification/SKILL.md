@@ -40,10 +40,13 @@ Returns verification results including all diagnostics.
 
 ## Understanding Results
 
-### SUCCESS Criteria
-Look for output matching: `verification results:: X verified, 0 errors`
-- X >= 0 is valid (even 0 verified, 0 errors = SUCCESS)
-- The key is **0 errors** in the verification results line
+### Success Criteria
+
+**Verus-Compatibility Success (primary goal during porting):**
+No syntax errors and no "not supported" errors. The code is Verus-compatible even if verification failures (pre/post conditions) remain. Verification failures are expected and do not block progress.
+
+**Full Verification Success (future goal, not required during porting):**
+`verification results:: X verified, 0 errors` — requires proofs and postconditions, out of scope for the porting phase.
 
 ### Error Categories
 

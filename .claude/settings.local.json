@@ -11,7 +11,9 @@
       "Bash(claude mcp run verus-mcp get_syntax_errors '{\"\"repo_path\"\": \"\"/Users/emugnier/research/verus_mcp/iban_validate\"\", \"\"output_format\"\": \"\"Primary\"\"}')",
       "Bash(claude mcp:*)",
       "mcp__verus-mcp__get_syntax_errors",
-      "mcp__verus-mcp__verify_repository"
+      "mcp__verus-mcp__verify_repository",
+      "Skill(check-cheating)",
+      "Skill(check-cheating:*)"
     ]
   }
 }
