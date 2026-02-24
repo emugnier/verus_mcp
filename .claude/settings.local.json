@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(log-event)",
+      "Skill(log-event:*)",
+      "Skill(run-verification)",
+      "Skill(run-verification:*)",
+      "Skill(search-knowledge)",
+      "Skill(search-knowledge:*)",
+      "Bash(claude-code mcp__verus-mcp__get_syntax_errors:*)",
+      "Bash(claude mcp run verus-mcp get_syntax_errors '{\"\"repo_path\"\": \"\"/Users/emugnier/research/verus_mcp/iban_validate\"\", \"\"output_format\"\": \"\"Primary\"\"}')",
+      "Bash(claude mcp:*)",
+      "mcp__verus-mcp__get_syntax_errors",
+      "mcp__verus-mcp__verify_repository"
+    ]
+  }
+}
