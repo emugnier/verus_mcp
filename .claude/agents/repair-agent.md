@@ -10,6 +10,7 @@ skills:
   - search-knowledge
   - learn-pattern
   - ask-user-help
+  - log-event
 memory: project
 ---
 
@@ -175,3 +176,5 @@ Use `ask-user-help` skill with this context:
 4. ALWAYS self-learn successful repairs
 5. ESCALATE after 3 failures - don't keep trying forever
 6. Document what went wrong for future learning
+7. **NEVER run `verus` directly** — always use the `run-verification` skill
+8. **After each accepted repair**, log a `change_applied` event via `log-event` skill with `"agent": "repair-agent"`

@@ -1,92 +1,71 @@
 ---
 name: search-knowledge
 description: RAG-like search of the knowledge base. Finds relevant patterns for the current agent and error type. Use before attempting any fix.
-allowed-tools: Read, Grep, Glob
+allowed-tools: Bash
 ---
 
 # Search Knowledge Skill
 
-Two-phase search: syntactic first, LLM semantic fallback if needed.
+Search the knowledge base for patterns matching the current error.
+
+## Command
+
+```bash
+python3 scripts/verus-kb.py retrieve --agent <agent_type> --error "<error_message>"
+```
+
+Returns a JSON array of matching patterns sorted by confidence:
+
+```json
+[
+  {
+    "path": "knowledge/idiom-converter/unsupported/question-mark.md",
+    "confidence": "high",
+    "match_reason": "High trigger match (100%): 'Verus does not support the ? operator'"
+  }
+]
+```
+
+Empty array `[]` means no match found.
 
 ## Input
 
-- `agent_type`: Which agent is searching (idiom-converter, assume-spec-gen, verification-fixer, repair-agent)
-- `error_message`: The actual error text from Verus
+- `--agent`: Which agent is searching (`idiom-converter`, `assume-spec-gen`, `repair-agent`)
+- `--error`: The actual error text from Verus (quote it)
 
-## Phase 1: Syntactic Search
+## Example
 
-### Step 1: Search agent-specific folder first
 ```bash
-# List all patterns for this agent
-ls knowledge/<agent_type>/
-
-# Search for keywords in pattern triggers
-grep -r "<keyword>" knowledge/<agent_type>/
+python3 scripts/verus-kb.py retrieve \
+  --agent idiom-converter \
+  --error "error: Verus does not support the ? operator"
 ```
 
-### Step 2: Extract and match keywords
-From the error message, extract key terms:
-- "not supported" 
-- "unsupported"
-- Specific Rust constructs mentioned (?, Vec, Iterator, etc.)
-- Function/type names
+## Confidence Levels
 
-### Step 3: Score matches
-- Exact trigger match: HIGH confidence
-- Partial keyword match (>50%): MEDIUM confidence
-- Single keyword match: LOW confidence
+| Confidence | Meaning |
+|-----------|---------|
+| `high` | Trigger phrase matches >= 80% of keywords |
+| `medium` | Trigger phrase matches >= 50% of keywords |
+| `low` | Single keyword match or content match |
 
-## Phase 2: LLM Semantic Search (if Phase 1 fails)
+## After Getting Results
 
-If no syntactic matches found:
+1. If `confidence: high` — read the pattern file and apply it directly
+2. If `confidence: medium` — read the pattern file, verify it applies, adapt if needed
+3. If `confidence: low` — read the pattern file as a hint, may need adaptation
+4. If empty array — novel error; attempt fix from scratch, save result as new pattern
 
-1. List all pattern files in `knowledge/<agent_type>/`
-2. Read the `## Pattern:` and `### When to use` sections of each
-3. Use reasoning to find semantically similar patterns:
-   - Similar error types even with different wording
-   - Similar code constructs
-   - Related transformation patterns
+## Reading a Pattern
 
-4. Also check OTHER agent folders if relevant:
-   - A verification-fixer pattern might help idiom-converter
-   - Cross-pollination of knowledge is allowed
-
-## Output Format
-
-```yaml
-found: true | false
-patterns:
-  - path: "knowledge/idiom-converter/unsupported/question-mark.md"
-    confidence: high | medium | low
-    match_reason: "Exact trigger match: 'not supported'"
-  - path: "..."
-    confidence: "..."
-    match_reason: "..."
-search_summary: "Found N patterns, best match is X"
+```bash
+cat <path-from-results>
 ```
 
-## If Nothing Found
+The pattern file contains: error example, before/after code, and explanation of why the fix works.
 
-Return:
-```yaml
-found: false
-patterns: []
-search_summary: "No matching patterns. This appears to be a novel error type."
-suggestion: "Attempt fix based on error analysis. If successful, save as new pattern."
-```
+## Cross-Agent Search
 
-## Example Search
-
-Error: `error: Verus does not support the ? operator`
-
-1. Keywords extracted: "not supported", "?", "operator"
-2. Search `knowledge/idiom-converter/` for these terms
-3. Find `question-mark-to-match.md` with trigger "does not support the ?"
-4. Return HIGH confidence match
-
-## Performance Tips
-
-- Search agent-specific folder first (most likely to have relevant patterns)
-- Use grep for fast keyword search before reading full files
-- Only read full pattern content for potential matches
-- Cache results if searching multiple times for same error
+The `retrieve` command automatically searches the specified agent's folder first,
+then cross-searches other agent folders. A pattern from `assume-spec-gen` may be
+relevant to `idiom-converter` and vice versa.

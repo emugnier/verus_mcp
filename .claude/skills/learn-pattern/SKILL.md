@@ -1,46 +1,41 @@
 ---
 name: learn-pattern
 description: Save a successful fix pattern to the knowledge base. Use after a fix works (from self-discovery or user help).
-allowed-tools: Write, Read, Grep, Glob
+allowed-tools: Bash
 ---
 
 # Learn Pattern Skill
 
 Save a successful fix to the knowledge base for future reuse.
 
-## Before Saving - Similarity Check
+## Before Saving — Similarity Check
 
-1. Extract key trigger words from the error message
-2. Search existing patterns in `knowledge/<agent-type>/` for similar triggers
-3. If >80% keyword overlap with existing pattern:
-   - Update that pattern's `success_count` instead
-   - Update `last_used` date
-   - DO NOT create a duplicate
+First check if a similar pattern already exists:
 
 ```bash
-# Search for similar patterns
-grep -r "trigger_keyword" knowledge/<agent-type>/
+python3 scripts/verus-kb.py retrieve --agent <agent_type> --error "<error_message>"
 ```
 
-## Pattern File Location
+If results include a `high` or `medium` confidence match, update that pattern instead of creating a duplicate:
 
-Create file at: `knowledge/<agent-type>/<error-category>/<descriptive-name>.md`
+```bash
+python3 scripts/verus-kb.py update --path <path-from-results>
+```
 
-Examples:
-- `knowledge/idiom-converter/unsupported-operator/question-mark-to-match.md`
-- `knowledge/verification-fixer/not-supported/vec-to-seq.md`
-- `knowledge/assume-spec-gen/external-call/string-parse.md`
+## Creating a New Pattern
 
-Create the error-category subdirectory if it doesn't exist.
+If no similar pattern exists, create one:
 
-## Pattern File Format
-
-```markdown
+```bash
+cat << 'EOF' | python3 scripts/verus-kb.py create \
+  --agent <agent_type> \
+  --category <error-category> \
+  --name <descriptive-name>
 ---
 triggers:
   - "exact error message snippet 1"
   - "exact error message snippet 2"
-source: self-learned | user
+source: self-learned
 created: YYYY-MM-DD
 success_count: 1
 last_used: YYYY-MM-DD
@@ -49,51 +44,59 @@ last_used: YYYY-MM-DD
 ## Pattern: [Descriptive Name]
 
 ### When to use
-[Describe the situation/error type that this pattern fixes]
+[Describe the situation/error type this pattern fixes]
 
 ### Error Example
-```
-[The actual error message from Verus]
-```
+\`\`\`
+[The actual Verus error message]
+\`\`\`
 
 ### Before (fails)
-```rust
+\`\`\`rust
 [Code that causes the error]
-```
+\`\`\`
 
 ### After (passes)
-```rust
+\`\`\`rust
 [Fixed code that passes verification]
-```
+\`\`\`
 
 ### Why it works
 [Brief explanation of why this transformation works]
 
 ### Notes
-[Any caveats, edge cases, or related patterns]
+[Caveats, edge cases, or related patterns]
+EOF
 ```
 
-## Naming Convention
+The command prints the path of the created file to stdout.
 
-Use descriptive kebab-case:
-- `question-mark-to-match.md`
-- `vec-push-to-seq-push.md`
-- `iterator-to-while-loop.md`
-- `external-call-assume-spec.md`
+## File Location Convention
 
-## Updating Existing Patterns
+```
+knowledge/<agent-type>/<error-category>/<descriptive-name>.md
+```
 
-If a similar pattern exists (>80% keyword overlap):
+Examples:
+- `knowledge/idiom-converter/unsupported-operator/question-mark-to-match.md`
+- `knowledge/assume-spec-gen/external-call/string-parse.md`
+- `knowledge/repair-agent/incorrect-attribute/external-trait-spec-vs-external-body.md`
 
-1. Read the existing pattern file
-2. Increment `success_count`
-3. Update `last_used` to today's date
-4. Optionally add new trigger phrases if the error message was slightly different
+## Naming Conventions
 
-## Logging
+Use descriptive kebab-case for both categories and names:
+- Category: `unsupported-operator`, `unsupported-iterators`, `method-signature`
+- Name: `question-mark-to-match`, `flat-map-to-chars-loop`, `mut-self-builder-methods`
 
-After saving a pattern, log the event:
-- Pattern file path
-- Source (self-learned or user)
-- Error that triggered it
-- Brief description of the fix
+## After Saving
+
+Log the event via `log-event`:
+
+```bash
+python3 scripts/verus-log.py event --type self_learned --data '{
+  "agent": "<agent_type>",
+  "pattern_id": "<path-returned-by-create>",
+  "trigger": "<error that triggered it>",
+  "success_count": 1
+}'
+```

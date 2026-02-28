@@ -1,0 +1,43 @@
+//! Modules providing SSL/TLS implementations. For backwards compatibility, OpenSSL is the default
+//! implementation, but Rustls is highly recommended as a pure Rust alternative.
+//!
+//! In order to simplify the swappable implementations these SSL/TLS modules adhere to an implicit
+//! trait contract and specific implementations are re-exported as [`SslContextImpl`] and [`SslStream`].
+//! The concrete type of these aliases will depend on which module you enable in `Cargo.toml`.
+
+use vstd::prelude::*;
+
+#[cfg(feature = "ssl-openssl")]
+pub(crate) mod openssl;
+#[cfg(feature = "ssl-openssl")]
+pub(crate) use self::openssl::OpenSslContext as SslContextImpl;
+#[cfg(feature = "ssl-openssl")]
+pub(crate) use self::openssl::SplitOpenSslStream as SslStream;
+
+#[cfg(feature = "ssl-rustls")]
+pub(crate) mod rustls;
+#[cfg(feature = "ssl-rustls")]
+pub(crate) use self::rustls::RustlsContext as SslContextImpl;
+#[cfg(feature = "ssl-rustls")]
+pub(crate) use self::rustls::RustlsStream as SslStream;
+
+#[cfg(feature = "ssl-native-tls")]
+pub(crate) mod native_tls;
+#[cfg(feature = "ssl-native-tls")]
+pub(crate) use self::native_tls::NativeTlsContext as SslContextImpl;
+#[cfg(feature = "ssl-native-tls")]
+pub(crate) use self::native_tls::NativeTlsStream as SslStream;
+
+// Stub definitions for when no SSL features are enabled
+// These ensure the types exist for Verus to process, even though they're never used at runtime
+#[cfg(not(any(feature = "ssl-openssl", feature = "ssl-rustls", feature = "ssl-native-tls")))]
+pub(crate) struct SslStream;
+
+#[cfg(not(any(feature = "ssl-openssl", feature = "ssl-rustls", feature = "ssl-native-tls")))]
+pub(crate) struct SslContextImpl;
+
+verus! {
+
+use vstd::*;
+
+} // verus!

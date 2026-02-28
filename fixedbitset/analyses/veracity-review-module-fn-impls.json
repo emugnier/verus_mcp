@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "function": "is_empty",
+    "file": "block/wasm.rs",
+    "lines": "11-14",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    pub fn is_empty(self) -> bool {\n        !v128_any_true(self.0)\n    }"
+  },
+  {
+    "id": 2,
+    "function": "andnot",
+    "file": "block/wasm.rs",
+    "lines": "16-19",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    pub fn andnot(self, other: Self) -> Self {\n        Self(v128_andnot(self.0, other.0))\n    }"
+  },
+  {
+    "id": 3,
+    "function": "not",
+    "file": "block/wasm.rs",
+    "lines": "24-27",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn not(self) -> Self::Output {\n        Self(v128_xor(self.0, Self::ALL.0))\n    }"
+  },
+  {
+    "id": 4,
+    "function": "bitand",
+    "file": "block/wasm.rs",
+    "lines": "32-35",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn bitand(self, other: Self) -> Self::Output {\n        Self(v128_and(self.0, other.0))\n    }"
+  },
+  {
+    "id": 5,
+    "function": "bitand_assign",
+    "file": "block/wasm.rs",
+    "lines": "39-42",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn bitand_assign(&mut self, other: Self) {\n        self.0 = v128_and(self.0, other.0);\n    }"
+  },
+  {
+    "id": 6,
+    "function": "bitor",
+    "file": "block/wasm.rs",
+    "lines": "47-50",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn bitor(self, other: Self) -> Self::Output {\n        Self(v128_or(self.0, other.0))\n    }"
+  },
+  {
+    "id": 7,
+    "function": "bitor_assign",
+    "file": "block/wasm.rs",
+    "lines": "54-57",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn bitor_assign(&mut self, other: Self) {\n        self.0 = v128_or(self.0, other.0);\n    }"
+  },
+  {
+    "id": 8,
+    "function": "bitxor",
+    "file": "block/wasm.rs",
+    "lines": "62-65",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn bitxor(self, other: Self) -> Self::Output {\n        Self(v128_xor(self.0, other.0))\n    }"
+  },
+  {
+    "id": 9,
+    "function": "bitxor_assign",
+    "file": "block/wasm.rs",
+    "lines": "69-72",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn bitxor_assign(&mut self, other: Self) {\n        self.0 = v128_xor(self.0, other.0)\n    }"
+  },
+  {
+    "id": 10,
+    "function": "eq",
+    "file": "block/wasm.rs",
+    "lines": "76-79",
+    "spec_strength": "",
+    "snippet": "    #[inline]\n    fn eq(&self, other: &Self) -> bool {\n        !v128_any_true(v128_xor(self.0, other.0))\n    }"
+  }
+]

@@ -1,237 +1,108 @@
 ---
 name: log-event
 description: Log events to the session history file. Use to track verification runs, subagent dispatches, changes applied, and other significant events during the retrofit process.
-allowed-tools: Read, Write, Edit
+allowed-tools: Bash
 ---
 
 # Log Event Skill
 
-Append structured events to the session history log at `.claude/verus-history/session-log.json`.
+Use the `verus-log.py` CLI to append structured events to `.claude/verus-history/session-log.json`.
 
-## Purpose
+## Session Commands
 
-Track all significant events during the Verus verification retrofit process:
-- Verification runs and their results
-- Subagent dispatches and outcomes
-- Pattern learning events
-- User interventions
-- Success/failure tracking
+### Start a new session
+```bash
+SESSION_ID=$(python3 scripts/verus-log.py session create --target <file-or-dir>)
+echo "Session: $SESSION_ID"
+```
+Prints the new session ID to stdout. Fails if a session is already active.
 
-## Session Log Format
-
-Location: `.claude/verus-history/session-log.json`
-
-Structure:
-```json
-{
-  "schema_version": "1.0",
-  "sessions": [
-    {
-      "session_id": "uuid-v4",
-      "started_at": "ISO-8601 timestamp",
-      "ended_at": "ISO-8601 timestamp or null if active",
-      "target_file": "path/to/file.rs",
-      "initial_error_count": 0,
-      "final_error_count": 0,
-      "status": "in_progress | completed | failed",
-      "events": [...]
-    }
-  ]
-}
+### End the active session
+```bash
+python3 scripts/verus-log.py session end --status completed
+# or
+python3 scripts/verus-log.py session end --status failed
 ```
 
-## Event Types
+## Event Commands
 
-### 1. Verification Run
-```json
-{
-  "type": "verus_run",
-  "timestamp": "ISO-8601",
+All events are logged to the currently active session.
+
+### Verification run
+```bash
+python3 scripts/verus-log.py event --type verus_run --data '{
   "verified_count": 12,
   "error_count": 3,
   "syntax_errors": 0,
   "unsupported_errors": 2,
   "verification_failures": 1,
-  "errors": [
-    {
-      "location": "file.rs:45",
-      "category": "unsupported",
-      "message": "error text..."
-    }
-  ]
-}
+  "errors": [{"location": "file.rs:45", "category": "unsupported", "message": "..."}]
+}'
 ```
 
-### 2. Subagent Dispatch
-```json
-{
-  "type": "subagent_dispatch",
-  "timestamp": "ISO-8601",
-  "agent": "idiom-converter | assume-spec-gen | repair-agent",
-  "reason": "description of why agent was called",
-  "error_targeted": "the error message being fixed"
-}
+### Subagent dispatch
+```bash
+python3 scripts/verus-log.py event --type subagent_dispatch --data '{
+  "agent": "idiom-converter",
+  "reason": "? operator not supported",
+  "error_targeted": "error: Verus does not support the ? operator at file.rs:32"
+}'
 ```
 
-### 3. Change Applied
-```json
-{
-  "type": "change_applied",
-  "timestamp": "ISO-8601",
-  "agent": "idiom-converter | assume-spec-gen | repair-agent",
-  "acceptance": "accepted | rejected",
-  "reason": "why accepted/rejected",
+### Change applied (logged by subagents, not orchestrator)
+```bash
+python3 scripts/verus-log.py event --type change_applied --data '{
+  "agent": "idiom-converter",
+  "acceptance": "accepted",
+  "reason": "Converted ? to match, error resolved",
   "error_count_before": 5,
-  "error_count_after": 3,
-  "files_modified": ["file1.rs", "file2.rs"]
-}
+  "error_count_after": 4,
+  "files_modified": ["src/lib.rs"]
+}'
 ```
 
-### 4. Verification Failure Logged
-```json
-{
-  "type": "verification_failure_logged",
-  "timestamp": "ISO-8601",
+### Pattern learned
+```bash
+python3 scripts/verus-log.py event --type self_learned --data '{
+  "agent": "idiom-converter",
+  "pattern_id": "knowledge/idiom-converter/unsupported/question-mark.md",
+  "trigger": "Verus does not support the ? operator",
+  "success_count": 1
+}'
+```
+
+### Verification failure (non-blocking, log only)
+```bash
+python3 scripts/verus-log.py event --type verification_failure_logged --data '{
   "error": "precondition might not hold",
   "location": "file.rs:67",
   "note": "Expected during retrofit - not blocking"
-}
+}'
 ```
 
-### 5. Self-Learned Pattern
-```json
-{
-  "type": "self_learned",
-  "timestamp": "ISO-8601",
-  "agent": "idiom-converter | assume-spec-gen | repair-agent",
-  "pattern_id": "knowledge/agent/category/name.md",
-  "trigger": "error message that triggers this pattern",
-  "success_count": 1
-}
-```
-
-### 6. User Help Requested
-```json
-{
-  "type": "user_help_requested",
-  "timestamp": "ISO-8601",
+### User help requested
+```bash
+python3 scripts/verus-log.py event --type user_help_requested --data '{
   "reason": "3 failed attempts on same error",
   "error": "the error message",
-  "attempts": ["attempt 1 description", "attempt 2 description", "attempt 3 description"]
-}
+  "attempts": ["attempt 1", "attempt 2", "attempt 3"]
+}'
 ```
 
-### 7. User Help Received
-```json
-{
-  "type": "user_help_received",
-  "timestamp": "ISO-8601",
-  "solution": "description of user's fix",
-  "pattern_saved": true,
-  "pattern_id": "knowledge/agent/category/name.md"
-}
-```
+## Event Ownership
 
-## Usage
-
-### Starting a New Session
-
-```
-1. Read the session log file
-2. Generate a new UUID for session_id
-3. Create new session object with:
-   - session_id
-   - started_at: current timestamp
-   - ended_at: null
-   - target_file: the file being worked on
-   - status: "in_progress"
-   - events: []
-4. Append to sessions array
-5. Write back to file
-```
-
-### Logging an Event
-
-```
-1. Read the session log file
-2. Find the active session (status: "in_progress")
-3. Create event object with appropriate type and fields
-4. Append to session's events array
-5. Write back to file
-```
-
-### Ending a Session
-
-```
-1. Read the session log file
-2. Find the active session
-3. Update:
-   - ended_at: current timestamp
-   - status: "completed" or "failed"
-   - final_error_count: final count from last verification
-4. Write back to file
-```
-
-## Helper Functions
-
-### Generate UUID
-```javascript
-// Use this pattern for session IDs
-const uuid = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-```
-
-### Get Current Timestamp
-```javascript
-// ISO-8601 format
-const timestamp = new Date().toISOString();
-```
-
-### Find Active Session
-```javascript
-// The active session is the one with status: "in_progress"
-const activeSession = sessions.find(s => s.status === "in_progress");
-```
-
-## Important Rules
-
-1. **Always use ISO-8601 timestamps** - `new Date().toISOString()`
-2. **Only one active session at a time** - end previous session before starting new one
-3. **Log all significant events** - don't skip events to save space
-4. **Atomic writes** - read, modify, write in single operation
-5. **Preserve all previous sessions** - append only, never delete history
-6. **Validate JSON structure** - ensure valid JSON before writing
+| Event type | Logged by |
+|-----------|-----------|
+| `verus_run` | Orchestrator |
+| `subagent_dispatch` | Orchestrator |
+| `verification_failure_logged` | Orchestrator |
+| `change_applied` | Subagent that made the change |
+| `self_learned` | Subagent that learned the pattern |
+| `user_help_requested` | Subagent |
+| `user_help_received` | Orchestrator |
 
 ## Error Handling
 
-If the log file doesn't exist:
-```json
-{
-  "schema_version": "1.0",
-  "sessions": []
-}
-```
-
-If JSON is malformed:
-- Back up the corrupted file
-- Create fresh log file
-- Report the issue
-
-## Example Workflow
-
-```
-1. User: "Fix iban_validate/src/base_iban.rs"
-2. Start session: session_id="123-abc"
-3. Log verus_run event: 15 errors found
-4. Log subagent_dispatch: idiom-converter for "? operator not supported"
-5. Log change_applied: accepted, errors: 15 → 14
-6. Log verus_run event: 14 errors remain
-7. ... repeat for each fix ...
-8. End session: status="completed", final_error_count=0
-```
-
-## Performance
-
-- Keep session log file size reasonable (< 1MB)
-- Archive old sessions if file grows too large
-- Use efficient JSON parsing (stream if needed)
-- Avoid reading/writing on every minor event (batch if appropriate)
+- Exits with code 1 and prints to stderr on error
+- Backs up corrupted log files to `.bak` before resetting
+- Only one active session at a time (`session create` will fail if one exists)

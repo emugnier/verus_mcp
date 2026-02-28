@@ -1,0 +1,254 @@
+{
+  "target": "fixedbitset/src",
+  "updated_at": "2026-02-28T01:04:00.286547Z",
+  "summary": {
+    "total": 23,
+    "specified": 23,
+    "remaining": 0
+  },
+  "files": [
+    {
+      "file": "src/lib.rs",
+      "total": 0,
+      "specified": 0,
+      "remaining": 0,
+      "functions": [],
+      "assume_specs": []
+    },
+    {
+      "file": "src/range.rs",
+      "total": 2,
+      "specified": 2,
+      "remaining": 0,
+      "functions": [
+        {
+          "name": "start",
+          "lines": "28",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "end",
+          "lines": "34",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        }
+      ],
+      "assume_specs": []
+    },
+    {
+      "file": "src/serde_impl.rs",
+      "total": 0,
+      "specified": 0,
+      "remaining": 0,
+      "functions": [],
+      "assume_specs": []
+    },
+    {
+      "file": "src/block/avx.rs",
+      "total": 0,
+      "specified": 0,
+      "remaining": 0,
+      "functions": [],
+      "assume_specs": []
+    },
+    {
+      "file": "src/block/avx2.rs",
+      "total": 0,
+      "specified": 0,
+      "remaining": 0,
+      "functions": [],
+      "assume_specs": []
+    },
+    {
+      "file": "src/block/default.rs",
+      "total": 12,
+      "specified": 12,
+      "remaining": 0,
+      "functions": [
+        {
+          "name": "is_empty",
+          "lines": "31-32",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "andnot",
+          "lines": "40-41",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "not",
+          "lines": "50-51",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "bitand",
+          "lines": "60-61",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "bitand_assign",
+          "lines": "69-70",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "bitor",
+          "lines": "79-80",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "bitor_assign",
+          "lines": "88-89",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "bitxor",
+          "lines": "98-99",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "bitxor_assign",
+          "lines": "107-108",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        }
+      ],
+      "assume_specs": [
+        {
+          "name": "<usize as core::ops::BitAndAssign>::bitand_assign",
+          "line": 9,
+          "has_spec": true
+        },
+        {
+          "name": "<usize as core::ops::BitOrAssign>::bitor_assign",
+          "line": 12,
+          "has_spec": true
+        },
+        {
+          "name": "<usize as core::ops::BitXorAssign>::bitxor_assign",
+          "line": 15,
+          "has_spec": true
+        }
+      ]
+    },
+    {
+      "file": "src/block/mod.rs",
+      "total": 9,
+      "specified": 9,
+      "remaining": 0,
+      "functions": [
+        {
+          "name": "into_usize_array",
+          "lines": "104-105",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "from_usize_array",
+          "lines": "111-112",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "partial_cmp",
+          "lines": "122-123",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "cmp",
+          "lines": "131-132",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "default",
+          "lines": "140-141",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        },
+        {
+          "name": "hash",
+          "lines": "149-151",
+          "in_verus": true,
+          "is_hole": false,
+          "no_spec": false,
+          "spec_str": "unknown"
+        }
+      ],
+      "assume_specs": [
+        {
+          "name": "<[T; N",
+          "line": 81,
+          "has_spec": true
+        },
+        {
+          "name": "<usize as core::hash::Hash>::hash_slice",
+          "line": 84,
+          "has_spec": true
+        },
+        {
+          "name": "core::intrinsics::transmute",
+          "line": 88,
+          "has_spec": true
+        }
+      ]
+    },
+    {
+      "file": "src/block/sse2.rs",
+      "total": 0,
+      "specified": 0,
+      "remaining": 0,
+      "functions": [],
+      "assume_specs": []
+    },
+    {
+      "file": "src/block/wasm.rs",
+      "total": 0,
+      "specified": 0,
+      "remaining": 0,
+      "functions": [],
+      "assume_specs": []
+    }
+  ]
+}

@@ -9,6 +9,7 @@ skills:
   - check-cheating
   - search-knowledge
   - learn-pattern
+  - log-event
 memory: project
 ---
 
@@ -330,6 +331,8 @@ If your specification worked and is novel:
    ```
 
    `external_body` and `external_type_specification` do NOT require this — they are standard spec-generation tools. Only the blanket `external` attribute (which removes code entirely from Verus) needs human sign-off.
+7. **NEVER run `verus` directly** — always use the `run-verification` skill
+8. **After each accepted change**, log a `change_applied` event via `log-event` skill with `"agent": "assume-spec-gen"`
 
 ## Escalation
 

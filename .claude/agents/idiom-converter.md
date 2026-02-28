@@ -9,6 +9,7 @@ skills:
   - check-cheating
   - search-knowledge
   - learn-pattern
+  - log-event
 memory: project
 ---
 
@@ -171,3 +172,5 @@ After 3 failed attempts, escalate.
 - PRESERVE program behavior - conversions must be semantically equivalent
 - ADD invariants to while loops when replacing for loops
 - NEVER weaken specifications to make conversion "work"
+- **NEVER run `verus` directly** — always use the `run-verification` skill
+- **After each accepted change**, log a `change_applied` event via `log-event` skill with `"agent": "idiom-converter"`
